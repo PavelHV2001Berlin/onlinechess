@@ -37,8 +37,15 @@ class Field():
         self.row = row
         self.col = col
         self.color = color
+        self.piece = None
     def draw(self):
         pygame.draw.rect(screen, self.color, (self.col * square_size, self.row * square_size, square_size, square_size))
+    def setPiece(self, piece):
+        self.piece = piece
+        self.piece.col = self.col
+        self.piece.row = self.row
+        self.piece.draw()
+        
 ##    def addPiece(self, ):
 ##        screen.blit(king_image, (piece.col * square_size, piece.row * square_size))  # Beispiel: König auf Feld D4
 
@@ -66,6 +73,29 @@ class Piece():
         image_y = square_center_y - self.image.get_height() // 2
 
         screen.blit(self.image, (image_x, image_y))
+    def getReachableFields(self, allFields):
+        reachableFields = []
+        
+        if "queen" in self.name:
+            for f in allFields:
+                if (f.row == self.row and f.col != self.col) or (f.col == self.col and f.row != self.row):
+                    if f.piece is None:
+                        reachableFields.append(f)
+            for field in reachableFields:
+                print(field.row, field.col)
+                
+        elif "rook" in self.name:
+            print("THE ROOOOOK")
+        elif "bishop" in self.name:
+            print("THE bishop")
+        elif "knight" in self.name:
+            print("THE knight")
+        elif "king" in self.name:
+            print("THE king")
+        elif "pawn" in self.name:
+            print("THE pawn")
+        return reachableFields
+        
     
 
 allPieces = [
@@ -116,8 +146,10 @@ def generate_fields():
 def drawBoard():
     for field in allFields:
         field.draw()
-    for piece in allPieces:
-        piece.draw()
+        for piece in allPieces:
+            if piece.col == field.col and piece.row == field.row:
+                field.setPiece(piece)
+    allFields[23].setPiece(allPieces[14])
                 
 ##                field.draw()
 ##                if row == 0 or row == 7:
@@ -129,6 +161,24 @@ def get_clicked_field(pos):
     row = y // square_size
     col = x // square_size
     return row, col
+def pieceClickedHandler():
+    #ist am Zug? Hat das Feld einen Piece? Dann berechne, welche züge möglich sind
+    
+    
+    # Get the position of the mouse click
+    clicked_pos = pygame.mouse.get_pos()
+    # Get the row and column of the clicked field
+    clicked_row, clicked_col = get_clicked_field(clicked_pos)
+    # Change the color of the clicked field to red
+    field_index = clicked_row * cols + clicked_col
+    if allFields[field_index].piece is not None:
+        allFields[field_index].color = RED
+        rFields = allFields[field_index].piece.getReachableFields(allFields)
+        for f in rFields:
+            f.color = RED
+            
+##    print("Row: ",allFields[field_index].row)
+##    print("Col: ",allFields[field_index].col)
 
 def main():
     global running
@@ -138,13 +188,8 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
-                    # Get the position of the mouse click
-                    clicked_pos = pygame.mouse.get_pos()
-                    # Get the row and column of the clicked field
-                    clicked_row, clicked_col = get_clicked_field(clicked_pos)
-                    # Change the color of the clicked field to red
-                    field_index = clicked_row * cols + clicked_col
-                    allFields[field_index].color = RED
+                    pieceClickedHandler()
+               
                   
                   
 
